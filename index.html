@@ -3,55 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF 轉換器</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .button {
-            margin: 10px 0;
-        }
-    </style>
+    <title>PDF轉Word下載</title>
 </head>
 <body>
-    <div class="container">
-        <h1>PDF 轉換器</h1>
-        <p>上傳您的 PDF 檔案，下載繁體中文 Word 檔案。</p>
-        <form id="uploadForm">
-            <input type="file" name="file" id="fileInput" required>
-            <button type="submit" class="button">上傳並轉換</button>
-        </form>
-        <div id="result" style="margin-top: 20px;"></div>
-    </div>
-
-    <script>
-        document.getElementById('uploadForm').addEventListener('submit', async function (e) {
-            e.preventDefault();
-            const fileInput = document.getElementById('fileInput');
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-
-            const response = await fetch('/upload', {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-            const resultDiv = document.getElementById('result');
-            if (response.ok) {
-                resultDiv.innerHTML = `<a href="${result.download_link}">下載轉換後的檔案</a>`;
-            } else {
-                resultDiv.innerHTML = `<p style="color: red;">錯誤：${result.error}</p>`;
-            }
-        });
-    </script>
+    <h1>PDF轉Word檔案下載</h1>
+    <form action="upload.php" method="post" enctype="multipart/form-data">
+        <label for="pdfFile">選擇PDF檔案:</label>
+        <input type="file" id="pdfFile" name="pdfFile" accept=".pdf" required>
+        <br><br>
+        <input type="submit" value="上傳並轉換">
+    </form>
 </body>
 </html>
