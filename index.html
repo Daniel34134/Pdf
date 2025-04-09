@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF 轉換為繁體中文 Word 檔</title>
+    <title>PDF 轉換為繁體中文檔案</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.1.0/docx.min.js"></script>
 </head>
 <body>
-    <h1>PDF 轉換為繁體中文 Word 檔</h1>
+    <h1>PDF 轉換為繁體中文檔案</h1>
     <input type="file" id="file-input" accept="application/pdf">
     <button id="convert-button">轉換</button>
+    <a id="download-link" style="display:none;">下載文字檔</a>
+    <pre id="output" style="white-space: pre-wrap;"></pre>
 
     <script>
         document.getElementById('convert-button').addEventListener('click', async () => {
@@ -24,34 +25,26 @@
 
             const pdfData = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
-            const { Document, Packer, Paragraph, TextRun } = docx;
-            const doc = new Document();
+            let textContent = '';
 
             for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                const textItems = textContent.items.map(item => item.str);
-                const pageText = textItems.join(' ');
-
-                // 將提取的文字添加到 Word 檔案中
-                const paragraph = new Paragraph({
-                    children: [
-                        new TextRun(pageText),
-                    ],
-                });
-                doc.addSection({ children: [paragraph] });
+                const text = await page.getTextContent();
+                const textItems = text.items.map(item => item.str);
+                textContent += textItems.join(' ') + '\n';
             }
 
-            // 生成 Word 檔案並下載
-            Packer.toBlob(doc).then(blob => {
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'extracted_text.docx';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            });
+            // 顯示提取的文字
+            document.getElementById('output').textContent = textContent;
+
+            // 創建可下載的文字檔，使用 UTF-8 編碼
+            const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const downloadLink = document.getElementById('download-link');
+            downloadLink.href = url;
+            downloadLink.download = 'extracted_text.txt';
+            downloadLink.style.display = 'block';
+            downloadLink.textContent = '下載文字檔';
         });
     </script>
 </body>
