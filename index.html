@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF 轉文字</title>
+    <title>PDF 轉換為繁體文字 PDF</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-    <h1>PDF 轉換為文字檔</h1>
+    <h1>PDF 轉換為繁體文字 PDF</h1>
     <input type="file" id="file-input" accept="application/pdf">
     <button id="convert-button">轉換</button>
-    <a id="download-link" style="display:none;">下載文字檔</a>
-    <pre id="output" style="white-space: pre-wrap;"></pre>
 
     <script>
         document.getElementById('convert-button').addEventListener('click', async () => {
@@ -25,26 +24,24 @@
 
             const pdfData = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
-            let textContent = '';
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
 
             for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
-                const text = await page.getTextContent();
-                const textItems = text.items.map(item => item.str);
-                textContent += textItems.join(' ') + '\n';
+                const textContent = await page.getTextContent();
+                const textItems = textContent.items.map(item => item.str);
+                const pageText = textItems.join(' ');
+
+                // 將提取的文字添加到 PDF 中
+                doc.text(pageText, 10, 10 + (i - 1) * 10); // 每頁的文字位置可以根據需要調整
+                if (i < pdf.numPages) {
+                    doc.addPage(); // 添加新頁
+                }
             }
 
-            // 顯示提取的文字
-            document.getElementById('output').textContent = textContent;
-
-            // 創建可下載的文字檔
-            const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const downloadLink = document.getElementById('download-link');
-            downloadLink.href = url;
-            downloadLink.download = 'extracted_text.txt';
-            downloadLink.style.display = 'block';
-            downloadLink.textContent = '下載文字檔';
+            // 下載生成的 PDF 檔案
+            doc.save('extracted_text.pdf');
         });
     </script>
 </body>
